@@ -1,0 +1,238 @@
+==============================================
+  PHASE I: CONSOLE TODO APP - DEMO SESSION
+==============================================
+
+Welcome to Console Todo App!
+Phase I - In-memory storage demo
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 1
+
+--- Add Task ---
+Title (required, 1-200 chars): Buy groceries
+Description (optional, max 1000 chars): Milk, eggs, bread, and vegetables
+
+[OK] Task #1 created: Buy groceries
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 1
+
+--- Add Task ---
+Title (required, 1-200 chars): Call mom
+Description (optional, max 1000 chars): Remind her about Sunday dinner
+
+[OK] Task #2 created: Call mom
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 1
+
+--- Add Task ---
+Title (required, 1-200 chars): Finish Phase 1
+Description (optional, max 1000 chars): Complete implementation and demo
+
+[OK] Task #3 created: Finish Phase 1
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 2
+
+--- All Tasks ---
+[ ] 3. Finish Phase 1 (Pending)
+   Complete implementation and demo
+[ ] 2. Call mom (Pending)
+   Remind her about Sunday dinner
+[ ] 1. Buy groceries (Pending)
+   Milk, eggs, bread, and vegetables
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 5
+
+--- Mark Complete/Incomplete ---
+Task ID: 1
+
+[OK] Task #1 marked as completed: Buy groceries
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 2
+
+--- All Tasks ---
+[ ] 3. Finish Phase 1 (Pending)
+   Complete implementation and demo
+[ ] 2. Call mom (Pending)
+   Remind her about Sunday dinner
+[X] 1. Buy groceries (Completed)
+   Milk, eggs, bread, and vegetables
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 3
+
+--- Update Task ---
+Task ID: 1
+
+Current task: Buy groceries
+Description: Milk, eggs, bread, and vegetables
+
+Enter new title (press Enter to keep current):
+Buy groceries and fruits
+Enter new description (press Enter to keep current):
+Milk, eggs, bread, vegetables, apples, bananas
+
+Before: Buy groceries
+After: Buy groceries and fruits
+[OK] Task updated successfully
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 2
+
+--- All Tasks ---
+[ ] 3. Finish Phase 1 (Pending)
+   Complete implementation and demo
+[ ] 2. Call mom (Pending)
+   Remind her about Sunday dinner
+[X] 1. Buy groceries and fruits (Completed)
+   Milk, eggs, bread, vegetables, apples, bananas
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 4
+
+--- Delete Task ---
+Task ID: 2
+Are you sure you want to delete task ID 2? (y/n): y
+
+[OK] Task deleted: Call mom
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 2
+
+--- All Tasks ---
+[ ] 3. Finish Phase 1 (Pending)
+   Complete implementation and demo
+[X] 1. Buy groceries and fruits (Completed)
+   Milk, eggs, bread, vegetables, apples, bananas
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 5
+
+--- Mark Complete/Incomplete ---
+Task ID: 3
+
+[OK] Task #3 marked as completed: Finish Phase 1
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 2
+
+--- All Tasks ---
+[X] 3. Finish Phase 1 (Completed)
+   Complete implementation and demo
+[X] 1. Buy groceries and fruits (Completed)
+   Milk, eggs, bread, vegetables, apples, bananas
+
+=== Todo App ===
+1. Add Task
+2. View All Tasks
+3. Update Task
+4. Delete Task
+5. Mark Complete/Incomplete
+6. Exit
+
+Enter choice: 6
+
+Goodbye! (Note: All tasks will be lost as they're stored in memory only)
+
+==============================================
+           DEMO SESSION COMPLETE
+==============================================
+
+All Features Demonstrated:
+✓ Create Task (3 tasks created)
+✓ View All Tasks (showing status and descriptions)
+✓ Mark Complete (tasks 1 and 3 marked complete)
+✓ Update Task (task 1 updated with new title/description)
+✓ Delete Task (task 2 deleted with confirmation)
+✓ Visual Indicators ([X] for completed, [ ] for pending)
+✓ Exit Application
+
+Total Time: ~60 seconds

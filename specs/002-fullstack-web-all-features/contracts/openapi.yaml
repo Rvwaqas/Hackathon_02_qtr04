@@ -1,0 +1,629 @@
+openapi: 3.0.3
+info:
+  title: Todo Full-Stack API
+  description: |
+    RESTful API for Phase II: Full-Stack Todo Web Application with authentication,
+    task management, priorities, tags, search, filter, sort, recurring tasks, and reminders.
+  version: 1.0.0
+  contact:
+    name: Evolution of Todo - Hackathon II
+    url: https://github.com/your-repo
+
+servers:
+  - url: https://api.example.com
+    description: Production (Railway/Render)
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: Tasks
+    description: Task CRUD operations and management
+  - name: Notifications
+    description: Reminder notifications for tasks
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/{user_id}/tasks:
+    get:
+      tags: [Tasks]
+      summary: List all tasks for user
+      description: |
+        Retrieve all tasks for the authenticated user with optional filtering, searching, and sorting.
+        Requires valid JWT token in Authorization header.
+      operationId: listTasks
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: status
+          in: query
+          description: Filter by completion status
+          schema:
+            type: string
+            enum: [all, pending, completed]
+            default: all
+        - name: priority
+          in: query
+          description: Filter by priority level
+          schema:
+            type: string
+            enum: [all, high, medium, low, none]
+            default: all
+        - name: tag
+          in: query
+          description: Filter by tag (case-sensitive)
+          schema:
+            type: string
+        - name: search
+          in: query
+          description: Search in title and description (case-insensitive)
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [priority, due_date, created_at]
+            default: created_at
+        - name: order
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      description: Create a new task for the authenticated user
+      operationId: createTask
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/{user_id}/tasks/{task_id}:
+    get:
+      tags: [Tasks]
+      summary: Get a single task
+      description: Retrieve a specific task by ID
+      operationId: getTask
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      description: Update all fields of a task (full replacement)
+      operationId: updateTask
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [Tasks]
+      summary: Delete a task
+      description: Permanently delete a task and its associated notifications
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Task deleted successfully
+                  error:
+                    type: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/{user_id}/tasks/{task_id}/complete:
+    patch:
+      tags: [Tasks]
+      summary: Toggle task completion
+      description: |
+        Toggle the completion status of a task. If the task is recurring and being marked complete,
+        automatically creates the next occurrence.
+      operationId: toggleComplete
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task completion toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      current_task:
+                        $ref: '#/components/schemas/Task'
+                      next_task:
+                        allOf:
+                          - $ref: '#/components/schemas/Task'
+                          - description: Next occurrence (only present if task is recurring)
+                        nullable: true
+                  error:
+                    type: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/{user_id}/notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications
+      description: Get all notifications for the authenticated user (unread first)
+      operationId: listNotifications
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: read
+          in: query
+          description: Filter by read status
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/{user_id}/notifications/{notification_id}:
+    patch:
+      tags: [Notifications]
+      summary: Mark notification as read
+      description: Update a notification's read status
+      operationId: markNotificationRead
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: notification_id
+          in: path
+          required: true
+          description: Notification ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                read:
+                  type: boolean
+              required: [read]
+      responses:
+        '200':
+          description: Notification updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token issued by Better Auth
+
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      description: User ID (must match authenticated user's ID)
+      schema:
+        type: string
+        example: usr_abc123xyz
+
+    TaskId:
+      name: task_id
+      in: path
+      required: true
+      description: Task ID
+      schema:
+        type: integer
+        example: 42
+
+  schemas:
+    Task:
+      type: object
+      required: [id, user_id, title, completed, priority, tags, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          example: 42
+          description: Unique task identifier
+        user_id:
+          type: string
+          example: usr_abc123xyz
+          description: Owner's user ID
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Write project proposal
+          description: Task title
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+          example: Draft proposal for Q1 initiatives
+          description: Optional detailed description
+        completed:
+          type: boolean
+          example: false
+          description: Completion status
+        priority:
+          type: string
+          enum: [high, medium, low, none]
+          default: none
+          example: high
+          description: Priority level
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+          maxItems: 10
+          example: ["work", "urgent"]
+          description: Array of tags
+        recurrence:
+          allOf:
+            - $ref: '#/components/schemas/Recurrence'
+          nullable: true
+          description: Recurrence configuration (null if not recurring)
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-01-05T17:00:00Z"
+          description: When task is due (ISO 8601)
+        reminder_offset_minutes:
+          type: integer
+          minimum: 0
+          nullable: true
+          enum: [5, 15, 30, 60]
+          example: 30
+          description: Minutes before due_date to send reminder
+        parent_task_id:
+          type: integer
+          nullable: true
+          example: 41
+          description: Parent task ID (for recurring tasks)
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-01T10:00:00Z"
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-01-01T10:00:00Z"
+          description: Last modification timestamp
+
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Write project proposal
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+          example: Draft proposal for Q1 initiatives
+        priority:
+          type: string
+          enum: [high, medium, low, none]
+          default: none
+          example: high
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+          maxItems: 10
+          example: ["work", "urgent"]
+        recurrence:
+          allOf:
+            - $ref: '#/components/schemas/Recurrence'
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-01-05T17:00:00Z"
+        reminder_offset_minutes:
+          type: integer
+          minimum: 0
+          nullable: true
+          enum: [5, 15, 30, 60]
+          example: 30
+
+    Recurrence:
+      type: object
+      required: [type, interval]
+      properties:
+        type:
+          type: string
+          enum: [daily, weekly, monthly]
+          example: daily
+          description: Recurrence type
+        interval:
+          type: integer
+          minimum: 1
+          maximum: 365
+          example: 1
+          description: Every N days/weeks/months
+        days:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          example: [1, 3, 5]
+          description: For weekly recurrence - days of week (1=Monday, 7=Sunday)
+
+    Notification:
+      type: object
+      required: [id, user_id, task_id, message, read, created_at]
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: Unique notification identifier
+        user_id:
+          type: string
+          example: usr_abc123xyz
+          description: Owner's user ID
+        task_id:
+          type: integer
+          example: 42
+          description: Related task ID
+        message:
+          type: string
+          maxLength: 500
+          example: "⏰ 'Write project proposal' is due soon!"
+          description: Notification message
+        read:
+          type: boolean
+          example: false
+          description: Read status
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-05T16:30:00Z"
+          description: Creation timestamp
+
+    TaskResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Task'
+        error:
+          type: null
+
+    TaskListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        error:
+          type: null
+
+    NotificationResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Notification'
+        error:
+          type: null
+
+    NotificationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        error:
+          type: null
+
+    Error:
+      type: object
+      required: [message, code]
+      properties:
+        message:
+          type: string
+          example: Invalid JWT token
+          description: Human-readable error message
+        code:
+          type: string
+          example: UNAUTHORIZED
+          description: Machine-readable error code
+
+    ErrorResponse:
+      type: object
+      properties:
+        data:
+          type: null
+        error:
+          $ref: '#/components/schemas/Error'
+
+  responses:
+    BadRequest:
+      description: Invalid request (validation error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            data: null
+            error:
+              message: "Validation error: title is required"
+              code: VALIDATION_ERROR
+
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            data: null
+            error:
+              message: Invalid or expired JWT token
+              code: UNAUTHORIZED
+
+    Forbidden:
+      description: Valid token, but not authorized for this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            data: null
+            error:
+              message: You do not have permission to access this resource
+              code: FORBIDDEN
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            data: null
+            error:
+              message: Task not found
+              code: NOT_FOUND
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            data: null
+            error:
+              message: An unexpected error occurred
+              code: INTERNAL_ERROR
