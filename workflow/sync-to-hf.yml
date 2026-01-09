@@ -1,23 +1,35 @@
-name: Sync to Hugging Face Space
+name: Sync Backend to Hugging Face Space
 
 on:
   push:
-    branches: [ main ]   # ya master, jo bhi tumhari default branch hai
-  workflow_dispatch:     # Manual run ke liye bhi
+    branches: [ main ]               # Ya jo tumhari default branch hai
+    paths:
+      - 'phase2/backend/**'          # Sirf backend folder change hone pe chalay
+  workflow_dispatch:                 # Manual run ke liye
 
 jobs:
-  sync-to-hub:
+  sync-to-hf:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # Full history chahiye
-          lfs: true        # Agar large files hain to
+          fetch-depth: 0
+          lfs: true
 
-      - name: Push to Hugging Face
+      - name: Prepare backend as root
+        run: |
+          mkdir temp-backend
+          mv phase2/backend/* temp-backend/
+          rm -rf phase2                  # Cleanup (optional)
+          mv temp-backend/* .
+          rm -rf temp-backend
+
+      - name: Push to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.Rvwaqas }}
         run: |
-          git remote add hf https://huggingface.co/spaces/Rwaqas/todoapp
           
-          git push -f hf main:main   # force push agar conflict ho
+          git add .
+          git commit -m "Auto-sync backend from GitHub" || echo "No changes to commit"
+          git push -f https://Rvwaqas:Rvwaqas@huggingface.co/spaces/Rvwaqas/todoapp HEAD:main
+          # ↑ Yahan apna exact Space name daalo (Rvwaqas/todoapp ya jo bhi hai)
