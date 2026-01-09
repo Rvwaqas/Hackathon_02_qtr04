@@ -45,10 +45,10 @@ const config: Config = {
         },
         // Priority colors
         priority: {
-          high: "#EF4444",      // Red
-          medium: "#F59E0B",    // Amber
-          low: "#3B82F6",       // Blue
-          none: "#9CA3AF",      // Gray
+          high: "#EF4444",
+          medium: "#F59E0B",
+          low: "#3B82F6",
+          none: "#9CA3AF",
         },
       },
       borderRadius: {

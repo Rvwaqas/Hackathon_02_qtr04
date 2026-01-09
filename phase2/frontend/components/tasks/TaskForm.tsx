@@ -215,11 +215,11 @@ export function TaskForm({ task, onSubmit, onCancel, loading }: TaskFormProps) {
                 Reminder
               </label>
               <Select
-                value={formData.reminder_offset_minutes?.toString() || ""}
+                value={formData.reminder_offset_minutes?.toString() || "none"}
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    reminder_offset_minutes: value ? parseInt(value) : null,
+                    reminder_offset_minutes: (value && value !== "none") ? parseInt(value) : null,
                   })
                 }
               >
@@ -227,7 +227,7 @@ export function TaskForm({ task, onSubmit, onCancel, loading }: TaskFormProps) {
                   <SelectValue placeholder="No reminder" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No reminder</SelectItem>
+                  <SelectItem value="none">No reminder</SelectItem>
                   <SelectItem value="5">5 minutes before</SelectItem>
                   <SelectItem value="15">15 minutes before</SelectItem>
                   <SelectItem value="30">30 minutes before</SelectItem>
@@ -244,9 +244,9 @@ export function TaskForm({ task, onSubmit, onCancel, loading }: TaskFormProps) {
               Recurrence
             </label>
             <Select
-              value={formData.recurrence?.type || ""}
+              value={formData.recurrence?.type || "none"}
               onValueChange={(value) => {
-                if (value === "") {
+                if (value === "none" || value === "") {
                   setFormData({ ...formData, recurrence: null });
                 } else {
                   setFormData({
@@ -263,7 +263,7 @@ export function TaskForm({ task, onSubmit, onCancel, loading }: TaskFormProps) {
                 <SelectValue placeholder="Does not repeat" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Does not repeat</SelectItem>
+                <SelectItem value="none">Does not repeat</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>

@@ -107,14 +107,14 @@ export function FilterPanel({
         <div className="space-y-1.5">
           <label className="text-xs text-muted-foreground">Tag</label>
           <Select
-            value={filters.tag}
-            onValueChange={(value) => onChange({ tag: value })}
+            value={filters.tag || "none_tag"}
+            onValueChange={(value) => onChange({ tag: value === "none_tag" ? "" : value })}
           >
             <SelectTrigger className="h-9">
               <SelectValue placeholder="All Tags" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Tags</SelectItem>
+              <SelectItem value="none_tag">All Tags</SelectItem>
               {availableTags.map((tag) => (
                 <SelectItem key={tag} value={tag}>
                   #{tag}

@@ -39,7 +39,13 @@
       "Bash(rm:*)",
       "Bash(pkill:*)",
       "Bash(python3:*)",
-      "Bash(killall:*)"
+      "Bash(killall:*)",
+      "Bash(npm run build:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(mkdir:*)"
     ]
   }
 }
