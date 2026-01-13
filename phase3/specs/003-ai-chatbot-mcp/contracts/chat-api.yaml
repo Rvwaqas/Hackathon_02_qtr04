@@ -1,0 +1,272 @@
+openapi: 3.1.0
+info:
+  title: Todo AI Chatbot API
+  version: 1.0.0
+  description: |
+    AI-powered chat API for natural language task management.
+    Part of Phase 3: Todo AI Chatbot Integration with MCP Architecture.
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.your-app.com
+    description: Production server
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send chat message
+      description: |
+        Process a natural language message and execute task operations.
+        Creates or continues a conversation session.
+      operationId: sendChatMessage
+      tags:
+        - Chat
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: User ID (must match authenticated user)
+          schema:
+            type: integer
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              create_task:
+                summary: Create a new task
+                value:
+                  message: "Add buy groceries"
+              list_tasks:
+                summary: List all tasks
+                value:
+                  conversation_id: 456
+                  message: "Show my tasks"
+              complete_task:
+                summary: Complete a task
+                value:
+                  conversation_id: 456
+                  message: "Mark task 5 done"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              examples:
+                task_created:
+                  summary: Task created successfully
+                  value:
+                    conversation_id: 456
+                    response: "✅ Added: 'buy groceries' (Task #45)"
+                    tool_calls:
+                      - "add_task"
+                tasks_listed:
+                  summary: Tasks listed
+                  value:
+                    conversation_id: 456
+                    response: |
+                      📝 Your pending tasks:
+                      1. #45 - buy groceries
+                      2. #44 - call mom
+                      3. #43 - pay bills
+                    tool_calls:
+                      - "list_tasks"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Message cannot be empty"
+        '401':
+          description: Unauthorized - invalid or missing JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Invalid authentication credentials"
+        '403':
+          description: Forbidden - user_id mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Forbidden"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Internal server error"
+
+  /api/{user_id}/conversations:
+    get:
+      summary: Get user's conversations
+      description: Retrieve list of user's chat conversations
+      operationId: getConversations
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversationSummary'
+
+  /api/{user_id}/conversations/{conversation_id}/messages:
+    get:
+      summary: Get conversation messages
+      description: Retrieve messages from a specific conversation (last 20)
+      operationId: getConversationMessages
+      tags:
+        - Conversations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Phase 2 authentication
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        conversation_id:
+          type: integer
+          nullable: true
+          description: Optional conversation ID to continue existing conversation
+          example: 456
+        message:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Natural language message
+          example: "Add buy groceries"
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+      properties:
+        conversation_id:
+          type: integer
+          description: Conversation ID (new or existing)
+          example: 456
+        response:
+          type: string
+          description: AI assistant response with formatted output
+          example: "✅ Added: 'buy groceries' (Task #45)"
+        tool_calls:
+          type: array
+          items:
+            type: string
+          description: List of MCP tools invoked
+          example: ["add_task"]
+
+    ConversationSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 456
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        message_count:
+          type: integer
+          example: 15
+
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+          example: "Task not found"
