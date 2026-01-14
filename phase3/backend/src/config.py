@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost/dbname"
+    DATABASE_URL: str = "postgresql://neondb_owner:npg_yiMFVjr5B1JW@ep-silent-wind-ahlf2bym-pooler.c-3.us-east-1.aws.neon.tech/Todoagent?sslmode=require&channel_binding=require"
 
     # JWT Authentication
     JWT_SECRET: str = "dev-secret-key-minimum-32-characters-for-development-only"
@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = True
+
+    # Phase III: AI Chatbot
+    COHERE_API_KEY: str = ""
 
     class Config:
         env_file = ".env"

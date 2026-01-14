@@ -200,6 +200,62 @@ export const tasksApi = {
   },
 };
 
+// Chat API
+export interface ChatMessage {
+  id?: number;
+  role: "user" | "assistant";
+  content: string;
+  created_at?: string;
+}
+
+export interface ChatResponse {
+  response: string;
+  conversation_id: string;
+  tool_calls?: Array<{
+    tool: string;
+    arguments: Record<string, unknown>;
+    result: Record<string, unknown>;
+  }>;
+}
+
+export interface ConversationResponse {
+  conversation_id: string;
+  title: string | null;
+  messages: ChatMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export const chatApi = {
+  async sendMessage(userId: number, message: string, conversationId?: string): Promise<ChatResponse> {
+    const response = await fetchWithAuth(`/api/users/${userId}/chat`, {
+      method: "POST",
+      body: JSON.stringify({
+        message,
+        conversation_id: conversationId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Failed to send message");
+    }
+
+    return response.json();
+  },
+
+  async getConversation(userId: number, limit: number = 20): Promise<ConversationResponse> {
+    const response = await fetchWithAuth(`/api/users/${userId}/conversations?limit=${limit}`);
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Failed to load conversation");
+    }
+
+    return response.json();
+  },
+};
+
 // Notifications API
 export const notificationsApi = {
   async getAll(read?: boolean): Promise<Notification[]> {

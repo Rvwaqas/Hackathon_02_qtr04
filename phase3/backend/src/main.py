@@ -7,7 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.config import settings
 from src.database import init_db, close_db, get_session
-from src.api import auth_router, tasks_router, notifications_router
+from src.api import auth_router, tasks_router, notifications_router, chat_router
 from src.services import NotificationService
 
 # Initialize scheduler
@@ -66,6 +66,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(notifications_router)
+app.include_router(chat_router)
 
 
 @app.get("/")

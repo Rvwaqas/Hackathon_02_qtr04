@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { tasksApi, authApi, getAuthToken } from "@/lib/api";
+import { ChatIcon } from "@/components/chat";
 
 // Mock data for development
 const mockTasks: Task[] = [
@@ -65,6 +66,16 @@ const mockTasks: Task[] = [
   },
 ];
 
+// Helper to decode JWT and get user ID
+function getUserIdFromToken(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub ? parseInt(payload.sub, 10) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -74,6 +85,7 @@ export default function DashboardPage() {
   const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [filters, setFilters] = useState<FilterState>({
     status: "all",
@@ -89,6 +101,12 @@ export default function DashboardPage() {
     if (!token) {
       router.push("/signin");
       return;
+    }
+
+    // Extract user ID from token
+    const extractedUserId = getUserIdFromToken(token);
+    if (extractedUserId) {
+      setUserId(extractedUserId);
     }
 
     fetchTasks();
@@ -427,6 +445,9 @@ export default function DashboardPage() {
           />
         </ModalContent>
       </Modal>
+
+      {/* AI Chat Assistant */}
+      {userId && <ChatIcon userId={userId} />}
     </div>
   );
 }

@@ -13,3 +13,7 @@ python-jose[cryptography]
 python-multipart
 sqlmodel
 uvicorn
+
+# Phase III: AI Chatbot
+openai
+mcp
