@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     DEBUG: bool = True
 
+    # AI Service (Cohere API for Phase 3 Chatbot)
+    COHERE_API_KEY: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = True
