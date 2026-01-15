@@ -18,6 +18,8 @@ frontend/.env.production.local
 # Database
 *.db
 taskflow.db
+backend/taskflow.db
+
 
 # OS generated files
 .DS_Store
@@ -43,7 +45,7 @@ out/
 *$py.class
 *.so
 .Python
-env/
+
 venv/
 ENV
 pip-log.txt
@@ -63,5 +65,3 @@ tmpclaude-*.cwd
 tmp/
 temp/
 
-# History
-.history
