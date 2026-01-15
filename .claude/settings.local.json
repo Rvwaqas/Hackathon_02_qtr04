@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(python -m uvicorn:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(pip install:*)"
+    ]
+  }
+}
