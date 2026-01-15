@@ -16,9 +16,7 @@ frontend/.env.test.local
 frontend/.env.production.local
 
 # Database
-*.db
-taskflow.db
-backend/taskflow.db
+
 
 
 # OS generated files
