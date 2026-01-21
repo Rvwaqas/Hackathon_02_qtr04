@@ -45,7 +45,15 @@
       "Bash(npm --version:*)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(ConvertFrom-Json)",
+      "Bash(ConvertTo-Json)",
+      "Bash(powershell -Command:*)",
+      "Bash(ConvertTo-Json -Depth 10)",
+      "Bash(powershell -NoProfile -Command \".\\\\.specify\\\\scripts\\\\powershell\\\\check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
+      "Bash(test:*)",
+      "Bash(del nul)",
+      "Bash(git add:*)"
     ]
   }
 }
