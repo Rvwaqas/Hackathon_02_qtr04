@@ -11,7 +11,7 @@ import type {
   AuthResponse,
 } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://rvwaqas-todoapp.hf.space";
 
 // Token management
 let authToken: string | null = null;
