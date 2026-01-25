@@ -1,0 +1,49 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+== Getting Started ==
+
+1. Get the frontend URL:
+   {{- if eq .Values.frontend.service.type "NodePort" }}
+   minikube service {{ include "todo-chatbot.frontend.fullname" . }} --url
+
+   Or manually:
+   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "todo-chatbot.frontend.fullname" . }})
+   export NODE_IP=$(minikube ip)
+   echo "Frontend URL: http://${NODE_IP}:${NODE_PORT}"
+   {{- else }}
+   kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "todo-chatbot.frontend.fullname" . }} 3000:{{ .Values.frontend.service.port }}
+   echo "Frontend URL: http://localhost:3000"
+   {{- end }}
+
+2. Verify backend health:
+   kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "todo-chatbot.backend.fullname" . }} 8000:{{ .Values.backend.service.port }}
+   curl http://localhost:8000/health
+
+3. Check pod status:
+   kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
+
+4. View logs:
+   kubectl logs -l app=todo-backend --namespace {{ .Release.Namespace }}
+   kubectl logs -l app=todo-frontend --namespace {{ .Release.Namespace }}
+
+== Troubleshooting ==
+
+If pods are not starting, check events:
+  kubectl get events --namespace {{ .Release.Namespace }} --sort-by=.lastTimestamp
+
+If secrets are missing, create them first:
+  kubectl create secret generic {{ include "todo-chatbot.fullname" . }}-secrets \
+    --from-literal=database-url=YOUR_DATABASE_URL \
+    --from-literal=cohere-api-key=YOUR_COHERE_API_KEY \
+    --from-literal=jwt-secret=YOUR_JWT_SECRET
+
+== AI-Powered Todo Chatbot ==
+
+This application provides:
+- User authentication (signup/login)
+- Task management (CRUD operations)
+- AI-powered chatbot using Cohere
+
+Enjoy your deployment!
