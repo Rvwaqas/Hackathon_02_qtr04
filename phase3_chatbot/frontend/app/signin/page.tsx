@@ -21,6 +21,14 @@ export default function SigninPage() {
     e.preventDefault();
     console.log("Form submitted:", formData);
     setError("");
+    
+    // Validate password length (72 bytes max)
+    const passwordByteLength = new Blob([formData.password]).size;
+    if (passwordByteLength > 72) {
+      setError("Password is too long. Please use a password with maximum 72 characters.");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -44,6 +52,20 @@ export default function SigninPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const byteLength = new Blob([value]).size;
+    
+    if (byteLength > 72) {
+      setError("Password is too long (maximum 72 characters)");
+      return;
+    }
+    
+    setError("");
+    setFormData({ ...formData, password: value });
   };
 
   return (
@@ -119,10 +141,9 @@ export default function SigninPage() {
                     type="password"
                     placeholder="Enter your password"
                     className="pl-10"
+                    maxLength={72}
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    onChange={handlePasswordChange}
                     required
                   />
                 </div>
