@@ -21,6 +21,14 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    
+    // Validate password length (72 bytes max)
+    const passwordByteLength = new Blob([formData.password]).size;
+    if (passwordByteLength > 72) {
+      setError("Password is too long. Please use a password with maximum 72 characters.");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -39,6 +47,20 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const byteLength = new Blob([value]).size;
+    
+    if (byteLength > 72) {
+      setError("Password is too long (maximum 72 characters)");
+      return;
+    }
+    
+    setError("");
+    setFormData({ ...formData, password: value });
   };
 
   return (
@@ -126,16 +148,15 @@ export default function SignupPage() {
                     type="password"
                     placeholder="At least 8 characters"
                     className="pl-10"
+                    maxLength={72}
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    onChange={handlePasswordChange}
                     required
                     minLength={8}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters with a letter and number
+                  Must be at least 8 characters (maximum 72 characters)
                 </p>
               </div>
             </div>
