@@ -39,7 +39,15 @@
       "Bash(python test_signup.py:*)",
       "Bash(python test_signin.py:*)",
       "Bash(python test_cohere_new.py:*)",
-      "Bash(python test_login_chat.py:*)"
+      "Bash(python test_login_chat.py:*)",
+      "mcp__vercel__list_teams",
+      "Bash(dir:*)",
+      "mcp__vercel__deploy_to_vercel",
+      "Bash(vercel deploy:*)",
+      "Bash(npx vercel deploy:*)",
+      "mcp__vercel__list_projects",
+      "mcp__vercel__search_vercel_documentation",
+      "Bash(find:*)"
     ]
   }
 }

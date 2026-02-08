@@ -1,0 +1,58 @@
+# Docker Compose for local development (without Minikube)
+# Usage: docker compose up --build
+# Note: For full Dapr integration, use Minikube deployment instead
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DATABASE_URL=${DATABASE_URL}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-me}
+      - JWT_ALGORITHM=HS256
+      - CORS_ORIGINS=http://localhost:3000
+      - DEBUG=True
+    depends_on:
+      redpanda:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.5
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --mode
+      - dev-container
+      - --advertise-kafka-addr
+      - internal://redpanda:9092
+    ports:
+      - "9092:9092"
+      - "8081:8081"
+      - "9644:9644"

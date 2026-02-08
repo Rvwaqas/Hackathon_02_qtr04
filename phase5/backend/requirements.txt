@@ -1,0 +1,34 @@
+# Backend dependencies for Docker build
+# Generated from backend/src/backend.egg-info/requires.txt + runtime imports
+
+# Core Framework
+fastapi>=0.128.0
+uvicorn>=0.40.0
+pydantic-settings>=2.12.0
+python-dotenv>=1.2.1
+python-multipart>=0.0.21
+
+# Database
+sqlmodel>=0.0.31
+asyncpg>=0.31.0
+aiosqlite>=0.22.1
+alembic>=1.17.2
+
+# Authentication
+passlib[bcrypt]>=1.7.4
+bcrypt==4.2.1
+python-jose[cryptography]>=3.5.0
+email-validator>=2.3.0
+
+# AI / LLM
+cohere>=5.0.0
+openai>=1.0.0
+
+# HTTP Client (event publishing)
+httpx>=0.27.0
+
+# Scheduling
+apscheduler>=3.11.2
+
+# Date handling
+python-dateutil>=2.9.0.post0

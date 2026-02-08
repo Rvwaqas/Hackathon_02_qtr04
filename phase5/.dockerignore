@@ -1,0 +1,41 @@
+# Version control
+.git/
+.gitignore
+
+# Node
+node_modules/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Logs and temp
+*.log
+*.tmp
+.env*
+!.env.example
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+
+# Specs and docs
+specs/
+history/
+docs/
+*.md

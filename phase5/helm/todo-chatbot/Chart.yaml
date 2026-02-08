@@ -1,0 +1,15 @@
+apiVersion: v2
+name: todo-chatbot
+description: Todo Chatbot with Dapr sidecar injection and Kafka event streaming
+type: application
+version: 3.0.0
+appVersion: "5.0.0-partc"
+keywords:
+  - todo
+  - chatbot
+  - dapr
+  - kafka
+  - event-driven
+  - cloud
+  - oke
+  - cicd

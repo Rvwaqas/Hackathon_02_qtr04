@@ -1,0 +1,63 @@
+{{- if and .Values.kafka.enabled (not .Values.kafka.external) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redpanda
+  labels:
+    app: redpanda
+    {{- include "todo-chatbot.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redpanda
+  template:
+    metadata:
+      labels:
+        app: redpanda
+    spec:
+      containers:
+        - name: redpanda
+          image: "{{ .Values.redpanda.image.repository }}:{{ .Values.redpanda.image.tag }}"
+          command:
+            - redpanda
+            - start
+            - --smp
+            - "1"
+            - --mode
+            - dev-container
+            - --advertise-kafka-addr
+            - "internal://redpanda.{{ .Release.Namespace }}.svc.cluster.local:9092"
+          ports:
+            - containerPort: 9092
+              name: kafka
+              protocol: TCP
+            - containerPort: 8081
+              name: schema-registry
+              protocol: TCP
+            - containerPort: 8082
+              name: http-proxy
+              protocol: TCP
+            - containerPort: 9644
+              name: admin
+              protocol: TCP
+          resources:
+            limits:
+              memory: {{ .Values.redpanda.resources.limits.memory }}
+              cpu: {{ .Values.redpanda.resources.limits.cpu | quote }}
+            requests:
+              memory: {{ .Values.redpanda.resources.requests.memory | default "256Mi" }}
+              cpu: {{ .Values.redpanda.resources.requests.cpu | default "200m" | quote }}
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+{{- end }}

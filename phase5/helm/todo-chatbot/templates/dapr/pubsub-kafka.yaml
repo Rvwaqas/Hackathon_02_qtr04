@@ -1,0 +1,50 @@
+{{- if and .Values.dapr.enabled .Values.kafka.enabled }}
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  labels:
+    {{- include "todo-chatbot.labels" . | nindent 4 }}
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    {{- if .Values.kafka.external }}
+    - name: brokers
+      value: {{ .Values.kafka.brokerUrl | quote }}
+    {{- else }}
+    - name: brokers
+      value: "redpanda.{{ .Release.Namespace }}.svc.cluster.local:9092"
+    {{- end }}
+    - name: consumerGroup
+      value: "todo-app"
+    {{- if .Values.kafka.external }}
+    - name: authRequired
+      value: "true"
+    - name: saslUsername
+      secretKeyRef:
+        name: kafka-secrets
+        key: username
+    - name: saslPassword
+      secretKeyRef:
+        name: kafka-secrets
+        key: password
+    - name: saslMechanism
+      value: "SCRAM-SHA-256"
+    - name: authType
+      value: "password"
+    - name: disableTls
+      value: "false"
+    {{- else }}
+    - name: authRequired
+      value: "false"
+    {{- end }}
+    - name: initialOffset
+      value: "newest"
+  scopes:
+    - {{ .Values.backend.dapr.appId }}
+{{- if .Values.kafka.external }}
+auth:
+  secretStore: kubernetes-secrets
+{{- end }}
+{{- end }}

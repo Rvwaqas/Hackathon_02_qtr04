@@ -1,0 +1,32 @@
+# Local Minikube values override for todo-chatbot
+# Use: helm install todo-chatbot ./helm/todo-chatbot -f ./helm/todo-chatbot/values-local.yaml
+
+# Backend overrides for local development
+backend:
+  image:
+    pullPolicy: Never  # Use locally built images in Minikube
+  env:
+    CORS_ORIGINS: "*"  # Allow all origins for local testing
+    DEBUG: "True"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Frontend overrides for local development
+frontend:
+  image:
+    pullPolicy: Never  # Use locally built images in Minikube
+  service:
+    type: NodePort
+    nodePort: 30000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
