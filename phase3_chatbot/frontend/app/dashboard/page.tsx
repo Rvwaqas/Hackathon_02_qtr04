@@ -84,6 +84,21 @@ function DashboardContent() {
     order: "desc",
   });
 
+
+  useEffect(() => {
+    // Sirf pehli baar page load hone pe 10 sec baad refresh
+    const alreadyRefreshed = sessionStorage.getItem("dash-refreshed-once");
+
+    if (!alreadyRefreshed) {
+      const timer = setTimeout(() => {
+        sessionStorage.setItem("dash-refreshed-once", "true");
+        window.location.reload(); // ya router.refresh() bhi try kar sakte ho
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // Check auth and fetch tasks on mount
   useEffect(() => {
     const token = getAuthToken();
