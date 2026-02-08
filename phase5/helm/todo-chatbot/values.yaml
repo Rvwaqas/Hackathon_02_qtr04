@@ -1,0 +1,116 @@
+# Default values for todo-chatbot Helm chart
+# AI-Powered Todo Chatbot - Full-stack application
+
+# Global settings
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account (not used for this deployment)
+serviceAccount:
+  create: false
+  name: ""
+
+# Backend service configuration
+backend:
+  name: todo-backend
+  replicaCount: 1
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  dapr:
+    enabled: false
+    appId: todo-backend
+    appPort: "8000"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  healthcheck:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  env:
+    HOST: "0.0.0.0"
+    PORT: "8000"
+    DEBUG: "False"
+    CORS_ORIGINS: "http://localhost:3000"
+
+# Frontend service configuration
+frontend:
+  name: todo-frontend
+  replicaCount: 1
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  dapr:
+    enabled: false
+    appId: todo-frontend
+    appPort: "3000"
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  healthcheck:
+    path: /
+    port: 3000
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: ""
+
+# Dapr configuration (disabled by default, enable via values-dapr.yaml)
+dapr:
+  enabled: false
+  logLevel: info
+
+# Kafka configuration (disabled by default)
+kafka:
+  enabled: false
+  broker: redpanda
+  external: false
+  brokerUrl: ""
+
+# Redpanda defaults
+redpanda:
+  image:
+    repository: docker.redpanda.com/redpandadata/redpanda
+    tag: v23.3.5
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: "1"
+    requests:
+      memory: 256Mi
+      cpu: "200m"
+
+# Secrets configuration (values to be provided at install time or via kubectl)
+secrets:
+  databaseUrl: ""
+  cohereApiKey: ""
+  jwtSecret: ""
+
+# ConfigMap settings
+config:
+  jwtAlgorithm: "HS256"
+  jwtExpirationDays: "7"

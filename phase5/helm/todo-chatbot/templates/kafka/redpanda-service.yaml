@@ -1,0 +1,29 @@
+{{- if and .Values.kafka.enabled (not .Values.kafka.external) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: redpanda
+  labels:
+    app: redpanda
+    {{- include "todo-chatbot.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: redpanda
+  ports:
+    - port: 9092
+      targetPort: 9092
+      name: kafka
+      protocol: TCP
+    - port: 8081
+      targetPort: 8081
+      name: schema-registry
+      protocol: TCP
+    - port: 8082
+      targetPort: 8082
+      name: http-proxy
+      protocol: TCP
+    - port: 9644
+      targetPort: 9644
+      name: admin
+      protocol: TCP
+{{- end }}

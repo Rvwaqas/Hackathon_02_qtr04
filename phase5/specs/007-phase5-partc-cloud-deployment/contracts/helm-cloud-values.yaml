@@ -1,0 +1,108 @@
+# Phase V Part C - Oracle OKE Cloud Values Contract
+# Usage: helm upgrade --install todo-chatbot ./helm/todo-chatbot \
+#   -f ./helm/todo-chatbot/values.yaml \
+#   -f ./helm/todo-chatbot/values-cloud.yaml
+
+# Backend with Dapr sidecar (cloud)
+backend:
+  name: todo-backend
+  replicaCount: 1
+  image:
+    repository: ghcr.io/rvwaqas/todo-backend
+    tag: latest
+    pullPolicy: Always
+  dapr:
+    enabled: true
+    appId: todo-backend
+    appPort: "8000"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 384Mi
+  healthcheck:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 5
+  env:
+    HOST: "0.0.0.0"
+    PORT: "8000"
+    DEBUG: "False"
+    CORS_ORIGINS: "*"
+
+# Frontend with Dapr sidecar (cloud, LoadBalancer)
+frontend:
+  name: todo-frontend
+  replicaCount: 1
+  image:
+    repository: ghcr.io/rvwaqas/todo-frontend
+    tag: latest
+    pullPolicy: Always
+  dapr:
+    enabled: true
+    appId: todo-frontend
+    appPort: "3000"
+  service:
+    type: LoadBalancer
+    port: 3000
+  resources:
+    limits:
+      cpu: 400m
+      memory: 384Mi
+    requests:
+      cpu: 150m
+      memory: 256Mi
+  healthcheck:
+    path: /
+    port: 3000
+    initialDelaySeconds: 25
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 5
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: ""
+
+# Dapr global (cloud)
+dapr:
+  enabled: true
+  logLevel: warn
+
+# Kafka (external Redpanda Cloud)
+kafka:
+  enabled: true
+  broker: redpanda-cloud
+  external: true
+  brokerUrl: ""  # Set via --set kafka.brokerUrl=<url>
+
+# No local Redpanda on cloud
+redpanda:
+  image:
+    repository: docker.redpanda.com/redpandadata/redpanda
+    tag: v23.3.5
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: "1"
+    requests:
+      memory: 256Mi
+      cpu: "200m"
+
+# Secrets (set at install time via --set or pre-created K8s secrets)
+secrets:
+  databaseUrl: ""
+  cohereApiKey: ""
+  jwtSecret: ""
+
+# ConfigMap
+config:
+  jwtAlgorithm: "HS256"
+  jwtExpirationDays: "7"

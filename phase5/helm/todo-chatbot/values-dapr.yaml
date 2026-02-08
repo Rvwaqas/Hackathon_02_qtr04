@@ -1,0 +1,104 @@
+# Phase V Part B - Dapr + Kafka Configuration
+# Usage: helm upgrade --install todo-chatbot ./helm/todo-chatbot -f ./helm/todo-chatbot/values-dapr.yaml
+
+# Dapr global configuration
+dapr:
+  enabled: true
+  logLevel: info
+
+# Backend with Dapr sidecar
+backend:
+  name: todo-backend
+  replicaCount: 1
+  image:
+    repository: todo-backend
+    tag: latest
+    pullPolicy: Never
+  dapr:
+    enabled: true
+    appId: todo-backend
+    appPort: "8000"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  healthcheck:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 5
+  env:
+    HOST: "0.0.0.0"
+    PORT: "8000"
+    DEBUG: "True"
+    CORS_ORIGINS: "*"
+
+# Frontend with Dapr sidecar
+frontend:
+  name: todo-frontend
+  replicaCount: 1
+  image:
+    repository: todo-frontend
+    tag: latest
+    pullPolicy: Never
+  dapr:
+    enabled: true
+    appId: todo-frontend
+    appPort: "3000"
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  healthcheck:
+    path: /
+    port: 3000
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 5
+  env:
+    NODE_ENV: "production"
+    NEXT_PUBLIC_API_URL: ""
+
+# Kafka (Redpanda) configuration
+kafka:
+  enabled: true
+  broker: redpanda
+
+redpanda:
+  image:
+    repository: docker.redpanda.com/redpandadata/redpanda
+    tag: v23.3.5
+  resources:
+    limits:
+      memory: 1Gi
+      cpu: "1"
+    requests:
+      memory: 256Mi
+      cpu: "200m"
+
+# Secrets (provide at install time or via kubectl)
+secrets:
+  databaseUrl: ""
+  cohereApiKey: ""
+  jwtSecret: ""
+
+# ConfigMap settings
+config:
+  jwtAlgorithm: "HS256"
+  jwtExpirationDays: "7"

@@ -1,0 +1,65 @@
+# Dapr Component Contracts for Phase V Part B
+# These define the expected Dapr component configurations
+
+---
+# Pub/Sub Component - Kafka via Redpanda
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  namespace: default
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "redpanda.default.svc.cluster.local:9092"
+    - name: consumerGroup
+      value: "todo-app"
+    - name: authRequired
+      value: "false"
+    - name: maxMessageBytes
+      value: "1048576"  # 1MB
+    - name: initialOffset
+      value: "newest"
+scopes:
+  - todo-backend
+
+---
+# State Store Component - PostgreSQL (Neon)
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: statestore
+  namespace: default
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: db-secrets
+        key: connection-string
+    - name: tableName
+      value: "dapr_state"
+    - name: keyPrefix
+      value: "name"
+    - name: cleanupIntervalInSeconds
+      value: "3600"
+scopes:
+  - todo-backend
+
+---
+# Secrets Store Component - Kubernetes Secrets
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kubernetes-secrets
+  namespace: default
+spec:
+  type: secretstores.kubernetes
+  version: v1
+  metadata: []
+scopes:
+  - todo-backend
+  - todo-frontend

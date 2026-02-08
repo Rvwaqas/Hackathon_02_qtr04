@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CloudEvents 1.0 Schema for Todo Events",
+  "description": "Schema for task lifecycle events published via Dapr Pub/Sub",
+  "type": "object",
+  "required": ["specversion", "type", "source", "id", "time", "data"],
+  "properties": {
+    "specversion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "CloudEvents specification version"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "com.todo.task.created",
+        "com.todo.task.updated",
+        "com.todo.task.completed",
+        "com.todo.task.deleted",
+        "com.todo.recurring.triggered",
+        "com.todo.reminder.due"
+      ],
+      "description": "Event type"
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^/todo-backend/",
+      "description": "Event source URI"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique event identifier"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp in RFC 3339 format"
+    },
+    "datacontenttype": {
+      "type": "string",
+      "const": "application/json",
+      "description": "Content type of data"
+    },
+    "data": {
+      "type": "object",
+      "description": "Event payload",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/TaskEventData"
+        },
+        {
+          "$ref": "#/definitions/RecurringEventData"
+        },
+        {
+          "$ref": "#/definitions/ReminderEventData"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "TaskEventData": {
+      "type": "object",
+      "description": "Data for task lifecycle events",
+      "required": ["task_id", "user_id", "title", "timestamp"],
+      "properties": {
+        "task_id": {
+          "type": "integer",
+          "description": "Task identifier"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Task title"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Task description"
+        },
+        "priority": {
+          "type": ["string", "null"],
+          "enum": ["low", "medium", "high", null],
+          "description": "Task priority"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed"],
+          "description": "Task status"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Task tags"
+        },
+        "due_date": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Task due date"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Event timestamp"
+        },
+        "changes": {
+          "type": "object",
+          "description": "For update events, the fields that changed",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "old": {},
+              "new": {}
+            }
+          }
+        }
+      }
+    },
+    "RecurringEventData": {
+      "type": "object",
+      "description": "Data for recurring task trigger events",
+      "required": ["original_task_id", "new_task_id", "user_id", "recurrence_type"],
+      "properties": {
+        "original_task_id": {
+          "type": "integer",
+          "description": "Original recurring task ID"
+        },
+        "new_task_id": {
+          "type": "integer",
+          "description": "Newly created task occurrence ID"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User identifier"
+        },
+        "recurrence_type": {
+          "type": "string",
+          "enum": ["daily", "weekly", "monthly"],
+          "description": "Recurrence pattern"
+        },
+        "recurrence_interval": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Interval between occurrences"
+        },
+        "next_due_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Due date for the new occurrence"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Event timestamp"
+        }
+      }
+    },
+    "ReminderEventData": {
+      "type": "object",
+      "description": "Data for reminder due events",
+      "required": ["task_id", "user_id", "reminder_time"],
+      "properties": {
+        "task_id": {
+          "type": "integer",
+          "description": "Task identifier"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Task title"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Task due date"
+        },
+        "reminder_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the reminder was scheduled"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Event timestamp"
+        }
+      }
+    }
+  }
+}

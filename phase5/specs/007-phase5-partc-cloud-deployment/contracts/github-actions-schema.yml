@@ -1,0 +1,108 @@
+# GitHub Actions Workflow Contract for Phase V Part C
+# Target file: .github/workflows/deploy-cloud.yml
+
+name: Deploy to Oracle OKE
+on:
+  push:
+    branches: [main, deploy]
+    paths:
+      - 'phase5/**'
+      - '.github/workflows/deploy-cloud.yml'
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/todo-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/todo-frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # 1. Checkout
+      - uses: actions/checkout@v4
+
+      # 2. Docker Buildx
+      - uses: docker/setup-buildx-action@v3
+
+      # 3. Login to ghcr.io
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. Build + push backend (multi-arch)
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./phase5
+          file: ./phase5/docker/Dockerfile.backend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            ${{ env.BACKEND_IMAGE }}:latest
+
+      # 5. Build + push frontend (multi-arch)
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./phase5
+          file: ./phase5/docker/Dockerfile.frontend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+
+      # 6. Install OCI CLI
+      - name: Install OCI CLI
+        run: |
+          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | bash -s -- --accept-all-defaults
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      # 7. Configure OCI CLI
+      - name: Configure OCI
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_CLI_KEY_CONTENT }}" | base64 -d > ~/.oci/oci_api_key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          user=${{ secrets.OCI_CLI_USER }}
+          tenancy=${{ secrets.OCI_CLI_TENANCY }}
+          fingerprint=${{ secrets.OCI_CLI_FINGERPRINT }}
+          key_file=~/.oci/oci_api_key.pem
+          region=${{ secrets.OCI_CLI_REGION }}
+          EOF
+
+      # 8. Configure kubectl for OKE
+      - name: Setup kubectl
+        run: |
+          oci ce cluster create-kubeconfig \
+            --cluster-id ${{ secrets.OKE_CLUSTER_OCID }} \
+            --file $HOME/.kube/config \
+            --region ${{ secrets.OCI_CLI_REGION }} \
+            --token-version 2.0.0
+          kubectl get nodes
+
+      # 9. Deploy via Helm
+      - name: Helm deploy
+        run: |
+          helm upgrade --install todo-chatbot ./phase5/helm/todo-chatbot \
+            -f ./phase5/helm/todo-chatbot/values.yaml \
+            -f ./phase5/helm/todo-chatbot/values-cloud.yaml \
+            --set backend.image.tag=${{ github.sha }} \
+            --set frontend.image.tag=${{ github.sha }} \
+            --set secrets.databaseUrl="${{ secrets.DATABASE_URL }}" \
+            --set secrets.cohereApiKey="${{ secrets.COHERE_API_KEY }}" \
+            --set secrets.jwtSecret="${{ secrets.JWT_SECRET }}" \
+            --set kafka.brokerUrl="${{ secrets.KAFKA_BROKER_URL }}" \
+            --wait --timeout 300s
+
+      # 10. Verify deployment
+      - name: Verify
+        run: |
+          kubectl get pods
+          kubectl get svc
+          echo "Deployment complete!"

@@ -1,0 +1,235 @@
+# Helm Values Schema for Phase V Part B
+# Defines expected structure of values.yaml and values-dapr.yaml
+
+# Schema Definition
+$schema: http://json-schema.org/draft-07/schema#
+title: Todo App Helm Values
+type: object
+
+properties:
+  # Application Configuration
+  backend:
+    type: object
+    properties:
+      image:
+        type: object
+        properties:
+          repository:
+            type: string
+            default: "todo-backend"
+          tag:
+            type: string
+            default: "latest"
+          pullPolicy:
+            type: string
+            enum: ["Always", "IfNotPresent", "Never"]
+            default: "IfNotPresent"
+      replicas:
+        type: integer
+        minimum: 1
+        default: 1
+      port:
+        type: integer
+        default: 8000
+      resources:
+        type: object
+        properties:
+          limits:
+            type: object
+            properties:
+              cpu:
+                type: string
+                default: "500m"
+              memory:
+                type: string
+                default: "512Mi"
+          requests:
+            type: object
+            properties:
+              cpu:
+                type: string
+                default: "100m"
+              memory:
+                type: string
+                default: "128Mi"
+      dapr:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          appId:
+            type: string
+            default: "todo-backend"
+          appPort:
+            type: integer
+            default: 8000
+          logLevel:
+            type: string
+            enum: ["debug", "info", "warn", "error"]
+            default: "info"
+          enableApiLogging:
+            type: boolean
+            default: true
+
+  frontend:
+    type: object
+    properties:
+      image:
+        type: object
+        properties:
+          repository:
+            type: string
+            default: "todo-frontend"
+          tag:
+            type: string
+            default: "latest"
+      replicas:
+        type: integer
+        minimum: 1
+        default: 1
+      port:
+        type: integer
+        default: 3000
+      dapr:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+          appId:
+            type: string
+            default: "todo-frontend"
+          appPort:
+            type: integer
+            default: 3000
+
+  # Dapr Configuration
+  dapr:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      logLevel:
+        type: string
+        enum: ["debug", "info", "warn", "error"]
+        default: "info"
+      components:
+        type: object
+        properties:
+          pubsub:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              name:
+                type: string
+                default: "kafka-pubsub"
+          statestore:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              name:
+                type: string
+                default: "statestore"
+          secrets:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              name:
+                type: string
+                default: "kubernetes-secrets"
+
+  # Kafka Configuration
+  kafka:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      broker:
+        type: string
+        enum: ["redpanda", "strimzi"]
+        default: "redpanda"
+      topics:
+        type: array
+        items:
+          type: string
+        default:
+          - "task-events"
+          - "reminders"
+
+  # Redpanda Configuration
+  redpanda:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: true
+      image:
+        type: object
+        properties:
+          repository:
+            type: string
+            default: "docker.redpanda.com/redpandadata/redpanda"
+          tag:
+            type: string
+            default: "latest"
+      resources:
+        type: object
+        properties:
+          limits:
+            type: object
+            properties:
+              memory:
+                type: string
+                default: "1Gi"
+              cpu:
+                type: string
+                default: "1"
+      service:
+        type: object
+        properties:
+          type:
+            type: string
+            default: "ClusterIP"
+          port:
+            type: integer
+            default: 9092
+
+  # Database Configuration
+  database:
+    type: object
+    properties:
+      external:
+        type: boolean
+        default: true
+        description: "Use external Neon PostgreSQL"
+      secretName:
+        type: string
+        default: "db-secrets"
+
+  # Secrets Configuration
+  secrets:
+    type: object
+    properties:
+      dbConnectionString:
+        type: string
+        description: "PostgreSQL connection string (from Neon)"
+      cohereApiKey:
+        type: string
+        description: "Cohere API key for chatbot"
+      geminiApiKey:
+        type: string
+        description: "Google Gemini API key"
+
+required:
+  - backend
+  - frontend
+  - dapr

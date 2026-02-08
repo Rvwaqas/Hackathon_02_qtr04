@@ -53,7 +53,19 @@
       "Bash(powershell -NoProfile -Command \".\\\\.specify\\\\scripts\\\\powershell\\\\check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
       "Bash(test:*)",
       "Bash(del nul)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "mcp__vercel__list_teams",
+      "mcp__vercel__list_projects",
+      "Bash(vercel:*)",
+      "Bash(npx vercel:*)",
+      "mcp__vercel__deploy_to_vercel",
+      "mcp__github__list_branches",
+      "Bash(git commit:*)",
+      "mcp__github__create_pull_request",
+      "Bash(gh pr create:*)"
     ]
   }
 }
